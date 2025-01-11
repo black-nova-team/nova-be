@@ -19,7 +19,8 @@ model Slack {
   inputText String
   manittoId Int?
   manitto   Slack?   @relation("ManittoRelation", fields: [manittoId], references: [id])
-  correct   Boolean
+  released  Boolean  @default(false)
+  correct   Boolean?
   createdAd DateTime @default(now())
 
   manittoOf Slack[] @relation("ManittoRelation")
