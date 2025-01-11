@@ -14,10 +14,14 @@ datasource db {
 }
 
 model Slack {
-  id        Int      @id @default(autoincrement())
-  username  String
-  inputText String
+  id        Int    @id @default(autoincrement())
+  name      String
+  slackName String
+  hobby     String
+  mbti      String
+  slackId   String
   imageKey  String
+
   manittoId Int?
   manitto   Slack?   @relation("ManittoRelation", fields: [manittoId], references: [id])
   released  Boolean  @default(false)

@@ -19,14 +19,13 @@ export class SlackController {
   @Post('info')
   @UseInterceptors(FileInterceptor('image'))
   async sendInfo(
-    @Query('username') username: string,
-    @Query('inputText') inputText: string,
+    @Query('name') name: string,
+    @Query('slackName') slackName: string,
+    @Query('hobby') hobby: string,
+    @Query('mbti') mbti: string,
+    @Query('slackId') slackId: string,
     @UploadedFile() image: Express.Multer.File,
   ) {
-    console.log('Username:', username);
-    console.log('InputText:', inputText);
-    console.log('Image:', image.originalname);
-
     // 1. 이미지 변환 API 요청
     // 우선 생략
 
@@ -37,8 +36,11 @@ export class SlackController {
 
     const newRecord = await this.prismaService.slack.create({
       data: {
-        username,
-        inputText,
+        name,
+        slackName,
+        hobby,
+        mbti,
+        slackId,
         imageKey: imageS3Key,
         manittoId: null, // 필요한 경우 null이 아닌 다른 값을 설정
         correct: false,
