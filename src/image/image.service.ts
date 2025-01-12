@@ -41,22 +41,5 @@ export class ImageService {
       console.error(error);
       throw error;
     }
-
-    // const command = new PutObjectCommand({
-    //   Bucket: this.bucketName,
-    //   Key: key,
-    //   Body: file.buffer,
-    //   Metadata: {
-    //     originalName: encodeURIComponent(file.originalname),
-    //   },
-    // });
-
-    // try {
-    //   await this.s3Client.send(command);
-    //   return key;
-    // } catch (error) {
-    //   console.log(error);
-    //   throw new InternalServerErrorException('Failed to upload file');
-    // }
   }
 }

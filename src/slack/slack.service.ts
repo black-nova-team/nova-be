@@ -86,6 +86,7 @@ export class SlackService {
     }
   }
   async uploadImageAndUser(user: User) {
+    console.log(user.file);
     const imageKey = await this.imageService.uploadImage(user.file[0]);
     await this.prismaService.slack.create({
       data: {
