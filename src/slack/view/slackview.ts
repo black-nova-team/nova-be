@@ -8,12 +8,13 @@ const startMessage = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: '*캐리커처 게임봇*\n인적사항과 사진을 입력해주세요!\n당신만의 캐리커처를 통해 새로운 인연을 만들어보아요😊',
+        text: '*Breaking Bot*\n인적사항과 사진을 입력해주세요!\n당신만의 캐리커처를 통해 새로운 인연을 만들어보아요😊',
       },
       accessory: {
         type: 'image',
-        image_url: 'https://example.com/your-image.png',
-        alt_text: '이미지 설명',
+        image_url:
+          'https://blackout-05-images.s3.us-east-1.amazonaws.com/example.jpeg',
+        alt_text: '예시 이미지',
       },
     },
     {

@@ -7,7 +7,9 @@ export class SlackController {
   constructor(private readonly slackService: SlackService) {}
 
   registerSlackEvents(app: App) {
-    app.command('/start', this.slackService.handleStartCommand.bind(this));
+    app.command('/start', async (args) => {
+      this.slackService.handleStartCommand(args);
+    });
     app.action(
       'open_modal_button',
       this.slackService.handleOpenModalButton.bind(this),

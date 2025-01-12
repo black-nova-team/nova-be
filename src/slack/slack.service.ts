@@ -25,9 +25,24 @@ export class SlackService {
   ) {}
   private registerSlack: RegisterSlack;
 
-  async handleStartCommand({ ack, say }: { ack: any; say: any }) {
+  async handleStartCommand({
+    ack,
+    say,
+    body,
+    client,
+  }: {
+    ack: any;
+    say: any;
+    body: any;
+    client: any;
+  }) {
     await ack();
-    await say(startMessage);
+    const response = await this.checkingAdmin(body, client);
+    if (response) {
+      await say(startMessage);
+    } else {
+      await say('You are not admin');
+    }
   }
 
   async handleOpenModalButton({
@@ -90,7 +105,6 @@ export class SlackService {
   }
 
   async uploadImageAndUser(user: User) {
-    console.log(user.file);
     const fileUrl = user.file[0].url_private_download;
     const response = await axios.get(fileUrl, {
       responseType: 'stream', // 스트림 형태로 응답 받기
