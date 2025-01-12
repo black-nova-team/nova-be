@@ -14,14 +14,8 @@ export class ImageService {
     this.bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
   }
 
-  async uploadImage(file: Express.Multer.File): Promise<string> {
-    if (!file || !file.buffer) {
-      throw new Error('Invalid file: File is undefined or empty');
-    }
-
-    console.log(file);
-    const key = `${Date.now()}-${Math.random().toString(36).substring(2)}${file.originalname}`;
-    const stream = Readable.from(file.buffer);
+  async uploadImage(stream: Readable): Promise<string> {
+    const key = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
 
     console.log(stream);
 
@@ -42,4 +36,33 @@ export class ImageService {
       throw error;
     }
   }
+
+  // async uploadImage(file: Express.Multer.File): Promise<string> {
+  //   if (!file || !file.buffer) {
+  //     throw new Error('Invalid file: File is undefined or empty');
+  //   }
+
+  //   console.log(file);
+  //   const key = `${Date.now()}-${Math.random().toString(36).substring(2)}${file.originalname}`;
+  //   const stream = Readable.from(file.buffer);
+
+  //   console.log(stream);
+
+  //   const upload = new Upload({
+  //     client: this.s3Client,
+  //     params: {
+  //       Bucket: this.bucketName,
+  //       Key: key,
+  //       Body: stream,
+  //     },
+  //   });
+
+  //   try {
+  //     const result = await upload.done();
+  //     return result.Key;
+  //   } catch (error) {
+  //     console.error(error);
+  //     throw error;
+  //   }
+  // }
 }
