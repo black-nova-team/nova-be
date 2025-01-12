@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ImageService } from 'src/image/image.service';
 import User from './model/user.model';
 import axios from 'axios';
+import { ConfigService } from '@nestjs/config';
 
 class RegisterSlack {
   ts: string;
@@ -20,6 +21,7 @@ export class SlackService {
   constructor(
     private readonly imageService: ImageService,
     private readonly prismaService: PrismaService,
+    private readonly configService: ConfigService,
   ) {}
   private registerSlack: RegisterSlack;
 
@@ -138,16 +140,51 @@ export class SlackService {
 
   async getUserList(client: any, say: any) {
     await say('잠시만 기다려 주세요!');
+    //
     const response = await client.users.list();
-    for (const member of response.members) {
+    const targetUsers = this.filteringUsers(response.members);
+
+    const shuffledUsers = await this.shuffleUsers(targetUsers);
+
+    for (const member of shuffledUsers) {
       if (!member.is_bot) {
         await this.postDM(client, member.id);
       }
     }
     await say('사용자 목록을 불러왔습니다.');
+
+    await this.prismaService.slack.updateMany({
+      where: { released: false },
+      data: { released: true },
+    });
   }
 
   async postDM(client: any, userId: string) {
+    const user = await this.prismaService.slack.findMany({
+      where: { slackId: userId },
+    })[0];
+
+    if (!user || !user.manittoId) {
+      console.error(
+        `User with slackId ${userId} not found or manittoId is missing`,
+      );
+      return;
+    }
+
+    // 2. manittoId에 해당하는 사용자의 이미지 키 조회
+    const manitto = await this.prismaService.slack.findUnique({
+      where: { id: user.manittoId },
+    });
+
+    if (!manitto || !manitto.imageKey) {
+      console.error(
+        `Manitto with id ${user.manittoId} not found or imageKey is missing`,
+      );
+      return;
+    }
+
+    const imageUrl = `https://${this.configService.get<string>('AWS_S3_BUCKET_NAME')}.s3.${this.configService.get<string>('AWS_S3_REGION')}.amazonaws.com/${manitto.imageKey}`;
+
     const response = await client.conversations.open({
       users: userId,
     });
@@ -165,11 +202,47 @@ export class SlackService {
         },
         {
           type: 'image',
-          image_url:
-            'https://blackout-05-images.s3.us-east-1.amazonaws.com/blackout.png',
+          image_url: imageUrl,
           alt_text: 'Image description',
         },
       ],
     });
+  }
+
+  // 워크스페이스 전체 유저 중에서, 워크플로 등록한 유저만 필터링해서 반환
+  async filteringUsers(members) {
+    const notReleasedUsers = await this.getNotReleasedUsers();
+    const notReleasedSlackIds = notReleasedUsers.map((user) => user.slackId);
+    const filteredMembers = members.filter((member) =>
+      notReleasedSlackIds.includes(member.id),
+    );
+    return filteredMembers;
+  }
+
+  // DB에서 워크플로 등록 후 released된 적 없는 유저 리스트 반환
+  async getNotReleasedUsers() {
+    const users = this.prismaService.slack.findMany({
+      where: {
+        released: false,
+      },
+    });
+
+    return users;
+  }
+
+  async shuffleUsers(targetUsers): Promise<any[]> {
+    const shuffledUsers = targetUsers.sort(() => Math.random() - 0.5);
+    for (let i = 0; i < shuffledUsers.length; i++) {
+      const currentUser = shuffledUsers[i];
+      const nextUser = shuffledUsers[(i + 1) % shuffledUsers.length]; // 마지막 사용자는 첫 번째 사용자와 연결
+      currentUser.manittoId = nextUser.slackId;
+
+      await this.prismaService.slack.updateMany({
+        where: { slackId: currentUser.id, released: false },
+        data: { manittoId: nextUser.id },
+      });
+    }
+
+    return shuffledUsers;
   }
 }
