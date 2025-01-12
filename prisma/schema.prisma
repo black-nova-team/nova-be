@@ -17,8 +17,8 @@ model Slack {
   id        Int    @id @default(autoincrement())
   name      String
   slackName String
-  hobby     String
-  mbti      String
+  hobby     String @default("none")
+  mbti      String @default("none")
   slackId   String
   imageKey  String
 
