@@ -12,6 +12,9 @@ export class ImageService {
     private readonly s3Client: S3Client,
   ) {
     this.bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
+    this.s3Client = new S3Client({
+      region: this.configService.get<string>('AWS_S3_REGION'),
+    });
   }
 
   async uploadImage(stream: Readable): Promise<string> {
