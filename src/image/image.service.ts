@@ -2,6 +2,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Readable } from 'stream';
 
 @Injectable()
 export class ImageService {
@@ -16,13 +17,14 @@ export class ImageService {
   async uploadImage(file: Express.Multer.File): Promise<string> {
     console.log(file);
     const key = `${Date.now()}-${Math.random().toString(36).substring(2)}${file.originalname}`;
+    const stream = Readable.from(file.buffer);
 
     const upload = new Upload({
       client: this.s3Client,
       params: {
         Bucket: this.bucketName,
         Key: key,
-        Body: file.buffer,
+        Body: stream,
       },
     });
 
