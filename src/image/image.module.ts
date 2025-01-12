@@ -8,6 +8,6 @@ import { S3Client } from '@aws-sdk/client-s3';
   imports: [ConfigModule],
   providers: [ImageService, S3Client],
   controllers: [ImageController],
-  exports: [ImageService],
+  exports: [ImageService], // Export ImageService
 })
 export class ImageModule {}
