@@ -10,9 +10,8 @@ export class SlackController {
     app.command('/start', async (args) => {
       this.slackService.handleStartCommand(args);
     });
-    app.action(
-      'open_modal_button',
-      this.slackService.handleOpenModalButton.bind(this),
+    app.action('open_modal_button', async (args) =>
+      this.slackService.handleOpenModalButton(args),
     );
     app.view('user_info_modal', async (args) =>
       this.slackService.handleUserInfoModal(args),

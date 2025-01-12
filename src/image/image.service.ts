@@ -20,8 +20,6 @@ export class ImageService {
   async uploadImage(stream: Readable): Promise<string> {
     const key = `${Date.now()}-${Math.random().toString(36).substring(2)}`;
 
-    console.log(stream);
-
     const upload = new Upload({
       client: this.s3Client,
       params: {

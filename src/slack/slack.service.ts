@@ -5,7 +5,7 @@ import { ImageService } from 'src/image/image.service';
 import User from './model/user.model';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
-
+import * as FormData from 'form-data';
 class RegisterSlack {
   ts: string;
   channelId: string;
@@ -55,10 +55,12 @@ export class SlackService {
     client: any;
   }) {
     await ack();
+
     this.registerSlack = new RegisterSlack(
       body.container.message_ts,
       body.container.channel_id,
     );
+
     try {
       await client.views.open({
         trigger_id: body.trigger_id,
@@ -91,9 +93,7 @@ export class SlackService {
       const slackName = body.user.name;
 
       const user = new User(name, hobby, mbti, file, slackId, slackName);
-
       await this.uploadImageAndUser(user);
-
       await client.chat.postMessage({
         channel: this.registerSlack.channelId,
         text: `신청이 완료되었습니다, ${slackName}님!`,
@@ -111,7 +111,21 @@ export class SlackService {
       headers: { Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}` },
     });
 
-    const imageKey = await this.imageService.uploadImage(response.data);
+    const form = new FormData();
+    form.append('file', response.data);
+
+    const convertedImage = await axios.post(
+      'http://3.92.206.249:31222/convert',
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+          accept: 'image/jpeg',
+        },
+      },
+    );
+
+    const imageKey = await this.imageService.uploadImage(convertedImage.data);
     await this.prismaService.slack.create({
       data: {
         name: user.name,
