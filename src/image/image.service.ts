@@ -15,9 +15,15 @@ export class ImageService {
   }
 
   async uploadImage(file: Express.Multer.File): Promise<string> {
+    if (!file || !file.buffer) {
+      throw new Error('Invalid file: File is undefined or empty');
+    }
+
     console.log(file);
     const key = `${Date.now()}-${Math.random().toString(36).substring(2)}${file.originalname}`;
     const stream = Readable.from(file.buffer);
+
+    console.log(stream);
 
     const upload = new Upload({
       client: this.s3Client,
